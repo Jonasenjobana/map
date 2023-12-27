@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "webapp": {
+    "geomap": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -28,7 +28,8 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.less"
+              "src/styles.less",
+              "src/styles/leaflet.css"
             ],
             "scripts": []
           },
@@ -69,10 +70,15 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "webapp:build:production"
+              "browserTarget": "geomap:build:production"
             },
             "development": {
-              "browserTarget": "webapp:build:development"
+              "browserTarget": "geomap:build:development"
+            },
+            "zq": {
+              "browserTarget": "geomap:build",
+              "host": "192.168.1.159",
+              "port": 8083
             }
           },
           "defaultConfiguration": "development"
@@ -80,7 +86,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "webapp:build"
+            "browserTarget": "geomap:build"
           }
         },
         "test": {
