@@ -1,21 +1,5 @@
 <div class="geo-container">
   <div class="info" *ngIf="!isFull">
-    <div>
-      图源地址：<input type="text" [(ngModel)]="baseUrl" />多图层前缀名：<input
-        type="text"
-        [ngModel]="multiLayerNameTemp"
-        (ngModelChange)="multiGroupChange($event)"
-      />
-      单图层名：<input
-        type="text"
-        [ngModel]="singleLayerNameTemp"
-        (ngModelChange)="singleGroupChange($event)"
-      /><button (click)="submit()">提交</button>
-    </div>
-    <div>
-      当前模式：{{groupType == 'single' ? "单图层" : "多图层"}} 当前层级：{{ zoom }} 当前经纬度：{{ latlng && latlng.lat || '--' }}~{{ latlng && latlng.lng || '--' }}
-      <button (click)="showRgb = !showRgb">显示rgbs</button>
-    </div>
   </div>
   <div id="map" #geoMap>
     <div class="full" [ngClass]="{'into-full': isFull, 'exit-full': !isFull}" (click)="isFull = !isFull"></div>

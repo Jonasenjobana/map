@@ -5,14 +5,20 @@ export class DrawTool {
     }
     drawPoint(point: [number, number], radius: number) {
         const [x, y] = point
+        this.ctx.beginPath();
         this.ctx.moveTo(x, y);
         this.ctx.arc(x, y, radius, 0, Math.PI*2);
+        this.ctx.stroke();
+        this.ctx.fill();
     }
     drawPoints(points: [number, number][], radius: number) {
         points.forEach(point => {
             this.drawPoint(point, radius);
         })
-        this.ctx.fill();
+    }
+    drawLine(point: [number, number]) {
+        const [x, y] = point;
+        this.ctx.lineTo(x, y);
         this.ctx.stroke();
     }
     drawLines(points: [number, number][], isClose: boolean = false) {
@@ -22,18 +28,15 @@ export class DrawTool {
         points.slice(1).forEach(point => {
             const [x, y] = point;
             this.ctx.lineTo(x, y);
-            this.ctx.moveTo(x, y);
         })
         if (isClose) {
            this.ctx.closePath();
+           this.ctx.fill();
         }
-        this.ctx.fill();
         this.ctx.stroke();
     }
     drawRect(lt: [number, number], size: [number, number]) {
         this.ctx.rect(lt[0], lt[1], size[0], size[1]);
-        this.ctx.stroke();
-        this.ctx.fill();
     }
     drawPolygen(points: [number, number][]) {
         this.drawLines(points, true);
