@@ -1,12 +1,8 @@
 <div class="geo-container">
   <div class="info" *ngIf="!isFull">
+    <button (click)="move()">{{isPlay ? '暂停' : '开启'}}</button>
   </div>
   <div id="map" #geoMap>
     <div class="full" [ngClass]="{'into-full': isFull, 'exit-full': !isFull}" (click)="isFull = !isFull"></div>
-    <div class="color-box" *ngIf="showRgb" [ngStyle]="{background: getLinearColor()}">
-      <ng-container *ngFor="let item of densityInfo">
-        <div class="item" [class.black]="item.value === '-9999'">{{item.value}}</div>
-      </ng-container>
-    </div>
   </div>
 </div>

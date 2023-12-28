@@ -1,8 +1,11 @@
 import { DrawTool } from './canvas.tool';
 import * as L from 'leaflet';
+import { Canvas } from '@antv/g';
+import { Renderer } from '@antv/g-canvas';
 export class SLCanvasBaseLayer extends L.Layer {
   protected _map: L.Map;
   protected _canvas: HTMLCanvasElement;
+  protected antVCanvas: Canvas 
   protected _ctx: CanvasRenderingContext2D;
   protected _options: CanvasLayerOptions;
   protected plotInfo: PlotInfo;
@@ -37,14 +40,19 @@ export class SLCanvasBaseLayer extends L.Layer {
     ));
     Object.assign(canvas.style, { transformOrigin: '50% 50%', zIndex });
     const { x, y } = this._map.getSize();
-    canvas.width = x;
-    canvas.height = y;
+    const dpr = window.devicePixelRatio
+    canvas.width = x * dpr;
+    canvas.height = y * dpr;
     this._ctx = canvas.getContext('2d');
     this.drawTool = new DrawTool(this._ctx);
     L.DomUtil.addClass(
       canvas,
       'leaflet-zoom-' + (animated ? 'animated' : 'hide')
     );
+    this.antVCanvas = new Canvas({
+      canvas: this._canvas,
+      renderer: new Renderer(),
+    })
   }
   protected _redraw() {
     this._resetCanvas();
