@@ -48,7 +48,7 @@ export class GeoMapComponent implements OnInit {
   }
   move() {
     this.isPlay = !this.isPlay
-    this.layer.anime(this.isPlay)
+    // this.layer.anime(this.isPlay)
   }
   setCanvasLayer() {
     const allData = this.getPlotData()

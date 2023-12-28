@@ -1,4 +1,13 @@
-import { Circle, Group, HTML, Line, Polygon, Polyline, Text } from '@antv/g';
+import {
+  Circle,
+  Group,
+  HTML,
+  Line,
+  Polygon,
+  Polyline,
+  Rect,
+  Text,
+} from '@antv/g';
 import * as L from 'leaflet';
 import { Track } from 'src/app/workspace/geo-map/geo-map/constant';
 import {
@@ -15,13 +24,13 @@ export class SLTrackLayer extends SLCanvasBaseLayer {
   protected _options: CanvasLayerOptions;
   protected plotInfo: PlotInfo;
   protected drawTool: DrawTool;
-  private trackMap: Map<string, any> = new Map(); 
-  ships: {mmsi: string, ship: Group}[] = [];
+  private trackMap: Map<string, any> = new Map();
+  ships: { mmsi: string; ship: Group }[] = [];
   /**可以根据progress 百分比获取所在步长 根据步长*/
-  allStep: number = 60 * 10 // 总帧数 = 总时长(s) * 刷新率
-  tracks: {[key in string]: Track[]} = {};
-  preStep: Track
-  nextStep: Track
+  allStep: number = 60 * 10; // 总帧数 = 总时长(s) * 刷新率
+  tracks: { [key in string]: Track[] } = {};
+  preStep: Track;
+  nextStep: Track;
   constructor(plotInfo: PlotInfo, options?: CanvasLayerOptions) {
     super(options);
     this.plotInfo = plotInfo;
@@ -36,12 +45,56 @@ export class SLTrackLayer extends SLCanvasBaseLayer {
     this.render();
   }
   public render() {
-    this.trackMap = new Map();
-    this.plotInfo.children.forEach((track) => {
-      let plotObj = {};
-      this.trackMap.set(track.data.mmsi, plotObj);
-      this.renderTrack(track, plotObj);
+    // 创建一个表示管道的矩形
+    let pipe = new Rect({
+      style: {
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 50,
+        fill: '#808080',
+        zIndex: 1,
+      },
     });
+    
+    this.antVCanvas.appendChild(pipe);
+    // 创建若干条表示水流的矩形
+    for (let i = 0; i < 20; i++) {
+      let water = new Rect({
+        style: {
+          x: i * 10,
+          y: 0, // 确保在管道中间
+          width: 5,
+          height: 30, // 矮一些，以便看起来在管道中
+          fill: 'blue',
+          opacity: 0.6,
+          zIndex: 2,
+        },
+      });
+      
+      pipe.appendChild(water);
+      // 添加向右流动的动画
+      water.animate(
+        [
+          {
+            transform: 'translateX(0)',
+          },
+          {
+            transform: 'translateX(100px)',
+          },
+        ],
+        {
+          duration: 500, // 持续2000毫秒
+          iterations: Infinity,
+        }
+      );
+    }
+    // this.trackMap = new Map();
+    // this.plotInfo.children.forEach((track) => {
+    //   let plotObj = {};
+    //   this.trackMap.set(track.data.mmsi, plotObj);
+    //   this.renderTrack(track, plotObj);
+    // });
   }
   /**绘制船形状 */
   genShipShape(x, y) {
@@ -55,14 +108,13 @@ export class SLTrackLayer extends SLCanvasBaseLayer {
         ],
         stroke: '#1890FF',
         fill: '#1890FF',
-        lineWidth: 2
+        lineWidth: 2,
       },
     });
     let group = new Group({
       id: 'ship',
       style: {
         zIndex: 3,
-
       },
     });
     group.setPosition([x - 3, y - 3]);
@@ -71,16 +123,16 @@ export class SLTrackLayer extends SLCanvasBaseLayer {
   }
   private renderTrack(track: PlotInfo, plotObj: { [key in string]: any }) {
     const zoom = this._map.getZoom();
-    let linePoint: [number, number][] = []
-    let ship: Group
-    let fx, fy
+    let linePoint: [number, number][] = [];
+    let ship: Group;
+    let fx, fy;
     track.children.forEach((child, index) => {
       const { plotType, latlng } = child;
       if (zoom > 4) {
         if (plotType === 'track-point') {
           const { x, y } = this._map.latLngToContainerPoint(latlng);
           if (index === 0) {
-            fx = x, fy = y
+            (fx = x), (fy = y);
           }
           let circle = new Circle({
             style: {
@@ -104,14 +156,14 @@ export class SLTrackLayer extends SLCanvasBaseLayer {
       style: {
         points: linePoint,
         stroke: '#1890ff',
-        zIndex: 1
-      }
-    })
+        zIndex: 1,
+      },
+    });
     this.antVCanvas.appendChild(polyline);
     ship = this.genShipShape(fx, fy);
     this.ships.push({
       mmsi: track.data.mmsi,
-      ship
+      ship,
     });
     this.antVCanvas.appendChild(ship);
   }
@@ -124,55 +176,52 @@ export class SLTrackLayer extends SLCanvasBaseLayer {
     let startTime = Date.now();
     let animeDraw = () => {
       let currentTime = Date.now();
-      let progress = 
-      this.ships.forEach(item => {
+      let progress = this.ships.forEach((item) => {
         // const [x, y] = this.getShipNextPosition(item.mmsi)
         // item.ship.setPosition([x - 3, y - 3])
-      })
-    }
+      });
+    };
     requestAnimationFrame(animeDraw);
   }
   playAnime(progress: number) {
-    // this.preStep = 
+    // this.preStep =
   }
-  stopAnime() {
-
-  }
+  stopAnime() {}
   /**
    * @param mmsi 船 轨迹
-   * @param progress 时间进度 
-   * @returns 
+   * @param progress 时间进度
+   * @returns
    */
   getShipNextPosition(mmsi: string, progress: number) {
-    let times: number[] = []
+    let times: number[] = [];
     // 总距离
-    const totalDistance = this.tracks[mmsi].slice(-1)[0].sumPreDistance
+    const totalDistance = this.tracks[mmsi].slice(-1)[0].sumPreDistance;
     const totalTime = this.tracks[mmsi].reduce((preTime, item) => {
-      let time = item.nextDistance / item.speed
-      times.push(time)
-      return time
-    }, 0)
-    let progressArr: number[] = []
-    times.forEach(time => {
-      progressArr.push(time/totalTime)
-    })
-    let index = progressArr.findIndex(item => {
-      return item > progress
-    })
-    const prePoint = this.tracks[mmsi][index]
-    const nextPoint = this.tracks[mmsi][index + 1]
+      let time = item.nextDistance / item.speed;
+      times.push(time);
+      return time;
+    }, 0);
+    let progressArr: number[] = [];
+    times.forEach((time) => {
+      progressArr.push(time / totalTime);
+    });
+    let index = progressArr.findIndex((item) => {
+      return item > progress;
+    });
+    const prePoint = this.tracks[mmsi][index];
+    const nextPoint = this.tracks[mmsi][index + 1];
     // 插值算法计算中间位置
     // this.lerp(prePoint, nextPoint)
-    return [0, 0]
+    return [0, 0];
   }
   /**
    * 线性插值 计算中间位置
-   * @param min 
-   * @param max 
+   * @param min
+   * @param max
    * @param fraction 百分比
-   * @returns 
+   * @returns
    */
   lerp(min, max, fraction) {
-    return (max - min ) * fraction + min;
+    return (max - min) * fraction + min;
   }
 }
